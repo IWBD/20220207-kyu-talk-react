@@ -1,11 +1,9 @@
-import Test from '@component/hello'
-import { usePopupManager } from '@context/popupManager'
+import req2svr from './req2svr'
 
 function Home() {
-  const popupManager = usePopupManager()
   
   const onOpenPopup = async () => {
-    let res = await popupManager.open( Test ).promise
+    let res = await req2svr.signInUser( 'test', '1234' )
     console.log( res )
   }
   

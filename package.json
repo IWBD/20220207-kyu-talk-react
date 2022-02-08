@@ -9,6 +9,7 @@
     "@testing-library/jest-dom": "^5.16.2",
     "@testing-library/react": "^12.1.2",
     "@testing-library/user-event": "^13.5.0",
+    "axios": "^0.25.0",
     "babel-jest": "^27.4.2",
     "babel-loader": "^8.2.3",
     "babel-plugin-named-asset-import": "^0.3.8",
@@ -32,6 +33,7 @@
     "jest": "^27.4.3",
     "jest-resolve": "^27.4.2",
     "jest-watch-typeahead": "^1.0.0",
+    "lodash": "^4.17.21",
     "mini-css-extract-plugin": "^2.4.5",
     "node-sass": "^7.0.1",
     "postcss": "^8.4.4",
@@ -138,9 +140,12 @@
     "presets": [
       "react-app"
     ],
-    "plugins": ["babel-plugin-react-scoped-css"]
+    "plugins": [
+      "babel-plugin-react-scoped-css"
+    ]
   },
   "devDependencies": {
     "babel-plugin-module-resolver": "^4.1.0"
-  }
+  },
+  "proxy": "http://localhost:3001"
 }
