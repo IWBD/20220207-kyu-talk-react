@@ -17,7 +17,7 @@ function SignInUser() {
   
   const onSignInUser = useCallback( () => {
     navigate( '/' )
-  }, [] )  
+  }, [ navigate ] )  
   
   return (
     <div className={styles.signInUserWrapper}>
