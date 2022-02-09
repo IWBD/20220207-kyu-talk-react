@@ -1,27 +1,24 @@
-import { createContext, useContext, useState } from 'react'
+import { createContext, useContext, useRef, useState } from 'react'
 import PopupAnchor from './popupAnchor'
 
-let nextKey = 0 
 
 const PopupManagerContext = createContext()
 
 function PopupManagerProvider( props ) {
   const [ popupList, setPopupList ] = useState( [] )
+  const nextKey = useRef( 0 )
   
   const open = ( component, params, options ) => {
     if( !component ) {
       throw new Error( 'component is null' )
     }
     
-    const popupKey = `_popup_key_${nextKey++}`
+    const popupKey = `_popup_key_${nextKey.current++}`
     
     let resolve
     let promise = new Promise( ( rs, rj ) => { resolve = rs } )
-
-    const editPopupList = [ ...popupList ]
-    editPopupList.push( { component, popupKey, params, options, resolve } )
     
-    setPopupList( editPopupList )
+    setPopupList( [ ...popupList, { component, popupKey, params, options, resolve } ] )
     
     return { popupKey, promise }
   }
