@@ -1,0 +1,26 @@
+.wrapper {
+  display: grid;
+  grid-template-rows: minmax(0, 50px) minmax(0, 1fr) minmax(0, 100px);
+  grid-template-columns: minmax(0, 1fr);
+  height: 100%;
+  
+  .header {
+    display: flex;
+    align-items: center ;  
+  }
+
+  .body {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;    
+  }
+
+  .footer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  
+}

@@ -1,25 +1,27 @@
-import React, { useState } from 'react'
-// import req2svr from './req2svr'
+import styles from './styles.module.scss'
+// import { useState, useMemo } from 'react'
 
-import Hello from '@component/hello'
-// import { usePopupManageer } from '@context/popupManager'
+// import { useStoreState } from '@store'
+import FriendList from './friendList'
 
 function Home() {
-  console.log( 'inininini' )
-  const [ count, setCount ] = useState( 0 )
-  // const popupManager = usePopupManageer()
-  
-  const onOpenPopup = async () => {
-    // let res = await req2svr.signInUser( 'test', '1234' )
-    // let res = await popupManager.open( Hello )
-    setCount( count + 1 )
-  }
-  
+  // const store = useStoreState()
+
   return (
-    <div>
-      popup test
-      <button onClick={onOpenPopup}>openPopup</button>
-      <Hello></Hello>
+    <div className={styles.wrapper}>
+      <div className={styles.header}>
+        <div className={styles.title}>안녕</div>
+        <div className={styles.contents}>
+          <button>검색</button>
+          <button>추가</button>
+        </div>
+      </div> 
+      <div className={styles.body}>
+        <FriendList></FriendList>
+      </div>
+      <div className={styles.footer}>
+        여기가 풋터
+      </div>
     </div>
   )
 }

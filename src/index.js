@@ -2,12 +2,25 @@ import React from 'react'
 import ReactDOM from 'react-dom'
 import App from './App'
 import reportWebVitals from './reportWebVitals'
-import { BrowserRouter } from  'react-router-dom'
+import { BrowserRouter } from 'react-router-dom'
+import { StoreProvider } from './store'
+import { SocketProvider } from '@context/socket'
+
+const pathname = window.location.pathname
+if( pathname === '/' ) {
+  if( !window.localStorage.getItem( 'login-info' ) ) {
+    window.location = '/login'
+  }
+} 
 
 ReactDOM.render(
   <React.StrictMode>
     <BrowserRouter>
-      <App/>
+      <StoreProvider>
+        <SocketProvider>
+          <App/>
+        </SocketProvider>
+      </StoreProvider>
     </BrowserRouter>
   </React.StrictMode>,
   document.getElementById( 'root' )

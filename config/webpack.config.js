@@ -428,7 +428,8 @@ module.exports = function (webpackEnv) {
                         "@component": "./src/component/",
                         "@context": "./src/context/",
                         "@page": "./src/page/",
-                        "@store": "./src/store/"
+                        "@store": "./src/store/",
+                        "@popup": "./src/popup/",
                       }
                     }]
                 ].filter(Boolean),

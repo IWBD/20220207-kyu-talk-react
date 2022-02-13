@@ -59,11 +59,17 @@ function SignUpUser() {
       if( res.ststus !== 200 ) {
         throw new Error( 'sign up fail' )
       }
-      navigate( '/signInUser' )
+      
+      window.localStorage.setItem( 'login-info', res.payload )
+      navigate( '/login' )
     } catch( err ) {
       console.error( err )
     }
   }, [ userId, password, verificationPassword, name, userIdAvailable, navigate ] )
+
+  function routingToLogin() {
+    navigate( '/login' )
+  }
 
   useEffect( () => {
     setUserIdAvailable( false )
@@ -98,6 +104,7 @@ function SignUpUser() {
               onInput={onInputName}/>
       </div>
       <button className={styles.signInButton} onClick={onSignUpUser}>회원가입</button>
+      <button className={styles.signInButton} onClick={routingToLogin}>로그인하기</button>
     </div>
   )
 }

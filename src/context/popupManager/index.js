@@ -1,7 +1,6 @@
 import { createContext, useContext, useRef, useState } from 'react'
 import PopupAnchor from './popupAnchor'
 
-
 const PopupManagerContext = createContext()
 
 function PopupManagerProvider( props ) {
@@ -32,7 +31,7 @@ function PopupManagerProvider( props ) {
       return popup.popupKey === inst
     } )
 
-    if( targetIndex > -1  ) {
+    if( targetIndex > -1 ) {
       const resolve = popupList[targetIndex].resolve
       
       const editPopupList = [ ...popupList ]
