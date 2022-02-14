@@ -3,12 +3,12 @@ import socketIoClient from 'socket.io-client'
 import { useStoreDispatch } from '@store'
 
 const SocketContext = createContext()
-let _storeDispatch = () => {}
 const socket = socketIoClient( 'localhost:3001' )
+let storeDispatch = () => {}
 
 socket.on( 'message', function( messageParams ) {
   console.log( 'message' )
-  _storeDispatch( { type: 'changeMessageList', values: messageParams } )
+  storeDispatch( { type: 'changeMessageList', values: messageParams } )
 } )
 
 function login( userId ) {
@@ -16,9 +16,9 @@ function login( userId ) {
 }
 
 function SocketProvider( props ) {
-  const storeDispatch = useStoreDispatch()
+  const dispatch = useStoreDispatch()
   
-  _storeDispatch = storeDispatch
+  storeDispatch = dispatch
 
   return (
     <SocketContext.Provider value={{login}}>
@@ -36,4 +36,3 @@ export {
   SocketProvider,
   useSocket
 }
-
