@@ -7,12 +7,16 @@ import { useMemo } from 'react'
 import { useStoreState, useStoreDispatch } from '@store'
 import req2svr from './req2svr'
 
+// let messageKey = 0
+
 function ChattingRoom( props ) { 
   const [ message, setMessage ] = useState( '' )
+  const [ scrollTop, setScrollTop ] = useState(0)
   const scrollRef = useRef( null )
   const popupManager = usePopupManager()
   const store = useStoreState()
   const storeDispatch = useStoreDispatch()
+  // const [ sendMessageList, setSendMessageList ] = useState( [] )
   
   const closePopup = () => {
     popupManager.close( props.popupKey )
@@ -23,6 +27,7 @@ function ChattingRoom( props ) {
   }
 
   const sendMessage = () => {
+    // const msgKey = messageKey++
     const fromUserIdList = _.map( props.userList, 'userId' )
     const sendMessge = {
       roomId: props.roomId,
@@ -31,11 +36,10 @@ function ChattingRoom( props ) {
       text: message,
       createDate: new Date().getTime(),
       notReadCount: fromUserIdList.length,
+      // msgKey
     }
 
-    if( !sendMessge.roomId ) {
-      sendMessge.userId = _.get( props.userList, '0.userId' )
-    }
+    // setSendMessageList( [ ...sendMessageList, message ] )
 
     req2svr.sendMessage( { 
       message: sendMessge, fromUserIdList 
@@ -45,74 +49,72 @@ function ChattingRoom( props ) {
         return 
       }
       sendMessge.messageId = res.payload
-      storeDispatch( { type: 'changeMessageList', values: { message: sendMessge, chattingRoom: chattingRoom } } )
+      storeDispatch( { type: 'changeMessageList', values: { message: sendMessge } } )
       moveScrollToBottom()
     } ).catch( err => {
       console.error( err )
     } ).finally( () => {
       setMessage( '' )
     } )
+    // socket.sendMessage( messageParams )
   }
 
-  const moveScrollToBottom = () => {
-    const { scrollHeight, clientHeight } = scrollRef.current
-    scrollRef.current.scrollTop = scrollHeight - clientHeight
-  }
-
-  const chattingRoom = useMemo( () => {
-    if( props.roomId ) {
-      return {}
-    } 
-    return _.find( store.chattingRoomList, { roomId: props.roomId } ) || {}
-  }, [props.roomId, store.chattingRoomList] )
+  // useEffect( () => {
+  //   setSendMessageList( _.filter( sendMessageList, ( { msgKey } ) => {
+  //     return _.find( store.messageLis, { msgKey } )
+  //   } ) )
+  // }, [store.messageLis, sendMessageList] )
 
   const messageList = useMemo( () => {
-    console.log( props.userList )
     return _( store.messageList )
       .filter( message => {
         return message.roomId === props.roomId &&
-          ( _.find( props.userList, { userId: message.sendUserId } ) || 
-            _.find( props.userList, { userId: message.userId } ) )
+          ( _.find( props.userList, { userId: message.sendUserId } ) ||
+            message.sendUserId === store.user.userId )
       } )
+      // .concat( sendMessageList )
       .orderBy( 'createDate' )
       .value()
   }, [store, props.roomId, props.userList] )
 
   const title = useMemo( () => {
-    return props.userList.length > 1 ? `그룹 채팅(${props.userList.length})`
-      : props.userList[0].name
-  }, [props.userList] )
+    return '채팅방 이름'
+  }, [] )
   
   const user = useMemo( () => {
     return store.user
   }, [store.user] ) 
 
   useEffect( () => {
-    const { scrollHeight, clientHeight, scrollTop } = scrollRef.current
-    if( scrollHeight - clientHeight - scrollTop < 150 ) {
+    if( scrollTop < 150 ) {
       moveScrollToBottom()
     }
   }, [messageList] )
 
-  useEffect( () => {
-    moveScrollToBottom()
-  }, [] )
- 
+  const moveScrollToBottom = () => {
+    const { scrollHeight, clientHeight } = scrollRef.current
+    scrollRef.current.scrollTop = scrollHeight - clientHeight
+    setScrollTop( scrollRef.current.scrollTop )
+  }
+
+  const onScroll = () => {
+    setScrollTop( scrollRef.current.scrollTop )
+  }
+
   return (
     <div className={styles.wrapper}>
       <div className={styles.header}>
-        <button className={styles.button} onClick={() => closePopup()}>닫기</button>
+        <button onClick={() => closePopup()}>닫기</button>
         { title }
-        <button className={styles.button} onClick={() => closePopup()}>닫기</button>
       </div>
       <div className={styles.contents}>
-        <div className={styles.chatting} ref={scrollRef}>
+        <div className={styles.chatting} ref={scrollRef} onScroll={() => onScroll()}>
           { messageList && messageList.map( message => {
             return message.sendUserId === user.userId ?
-              <div className={`${styles.message_field} ${styles.my_message}`} key={message.messageId}>
+              <div className={styles.my_messge_field} key={message.messageId}>
                 <div className={styles.text}>{message.text}</div>
               </div> : 
-              <div className={styles.message_field} key={message.messageId}>
+              <div className={styles.messge_field} key={message.messageId}>
                 <div className={styles.name}>{message.name}</div>
                 <div className={styles.text}>{message.text}</div>
               </div> 

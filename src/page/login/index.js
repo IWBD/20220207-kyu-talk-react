@@ -1,11 +1,15 @@
 import styles from './styles.module.scss'
-import React, { useState, useCallback, useEffect } from 'react'
+import React, { useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useStoreDispatch } from '@store'
+import { useSocket } from '@context/socket'
 import req2svr from './req2svr'
 
 function SignInUser() {
   const [ userId, setUserId ] = useState( '' )
   const [ password, setPassword ] = useState( '' )
+  const storeDispatch = useStoreDispatch()
+  const socket = useSocket()
   const navigate = useNavigate()
 
   const onInputUserId = useCallback( ( event ) => {
@@ -16,24 +20,22 @@ function SignInUser() {
     setPassword( event.target.value )
   }, [] )
 
-  function onLogin() {
-    req2svr.login( { userId, password } )
-      .then( res => {
-        if( res.code !== 200 ) {
-          throw new Error( res )
-        }
-        window.localStorage.setItem( 'login-info', JSON.stringify( { authToken: 'agaghajgsadgdsh', userId: userId } ) )
-        navigate( '/' )
-      } ).catch( err => {
-        console.error( err )
-        alert( '로그인에 실패하였습니다.' )
-      } )
+  const onLogin = async () => {
+    try { 
+      let res = await req2svr.login( { userId, password } )  
+      if( res.code !== 200 ) {
+        throw new Error( res )
+      }
+      window.localStorage.setItem( 'login-info', JSON.stringify( { authToken: 'agaghajgsadgdsh', userId: userId } ) )
+      storeDispatch( { type: 'initStore', values: res.payload } )
+      socket.login( res.payload.user.userId )
+      navigate( '/' )
+    } catch ( err ) {
+      console.error( err )
+      alert( '로그인에 실패하였습니다.' )
+    }
   }
 
-  // useEffect( () => {
-  //   window.localStorage.setItem( 'login-info', JSON.stringify({}) )
-  // }, [] )
-  
   function routingToSign() {
     navigate( '/signUp' )
   }

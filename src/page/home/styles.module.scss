@@ -3,15 +3,18 @@
   grid-template-columns: minmax(0, 1fr);
   grid-template-rows: minmax(0, 50px) minmax(0, 1fr) minmax(0, 60px);
   height: 100%;
+  background-color: #000;
+  color: #fff;
 
   .header {
     display: flex;
     align-items: center;
     padding: 0 10px;
-    border-bottom: 1px solid black;
+    border-bottom: 1px solid #fff;
 
     .title {
-
+      font-size: 18px;
+      font-weight: bold;
     }
 
     .contents {
@@ -29,15 +32,12 @@
       display: flex;
       align-items: center;
       height: 80px;
-      border-bottom: 1px solid black;
+      border-bottom: 1px solid #fff;
+      font-size: 16px;
     }
 
     .friend_area {
       padding: 10px 0;
-
-      .friend_summery {
-        
-      }
 
       .friend {
         display: flex;
@@ -46,9 +46,38 @@
       }
     }
 
+    .room_area {
+      padding: 10px 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      height: 50px;
+      
+      .contents {
+        flex: 1;
+        padding:0 5px;
+        overflow:hidden; 
+      }
+
+      .date {
+        flex: 0 0 50px;
+        font-size: 10px;
+      }
+
+      .text_gard {
+        overflow:hidden; 
+        text-overflow:ellipsis; 
+        white-space:nowrap;
+      }
+    }
+
   }
 
   .footer {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    background-color: rgb(39, 39, 39);
     
   }
 }

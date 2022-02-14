@@ -1,6 +1,5 @@
-import { createContext, useContext, useReducer, useEffect } from 'react'
+import { createContext, useContext, useReducer } from 'react'
 import _ from 'lodash'
-import req2svr from './req2svr'
 
 const initialState = {
   user: {
@@ -16,54 +15,63 @@ const storeContext = createContext( {} )
 const storeDispatchContext = createContext()
 
 function reducer( state, action ) {
+  const { messageList, message, chattingRoomList, 
+    chattingRoom, user, friendList } = action.values
+
   switch( action.type ) {
     case 'initStore':
-      state.user = action.values.user
-      state.friendList = action.values.friendList
-      state.chattingRoomList = action.values.chattingRoomList
-      state.messageList = action.values.messageList
+      state.user = user
+      state.friendList = friendList
+      state.chattingRoomList = chattingRoomList
+      state.messageList = messageList
       return { ...state }
     case 'changeUser':
       state.user = action.values
       return state
     case 'changeFriendList': 
-      const { friendList, friend } = action.values
-      if( friend && !_.isEmpty( friend ) ) {
-        const friendIdx = _.findIndex( state.friendList, { userId: friend.userId } )
-        if( friendIdx < 0 ) {
-          state.friendList.push( friend )
-        } else {
-          state.friendList[friendIdx] = friend
-        }
-      } else {
-        state.friendList = friendList || []
-      }
-      return state
+      state.friendList = friendList || []
+      return { ...state }
     case 'changeChattingRoomList': 
-      const { chattingRoomList, chattingRoom } = action.values
       if( chattingRoom && !_.isEmpty( chattingRoom ) ) {
-        const chattingRoomIdx = _.findIndex( state.chattingRoomList, { roomId: chattingRoom.roomId } )
-        if( chattingRoomIdx < 0 ) {
-          state.chattingRoomList.push( chattingRoom )
-        } else {
-          state.chattingRoomList[chattingRoomIdx] = chattingRoom
-        }
-      } else {
-        state.chattingRoomList = chattingRoomList || []
+        state.chattingRoomList = _( state.chattingRoomList )
+          .filter( room => room.roomId && room.roomId !== chattingRoom.roomId )
+          .concat( chattingRoom )
+          .value()
+      } 
+
+      if( chattingRoomList ) {
+        state.chattingRoomList = _.unionBy( chattingRoomList, state.chattingRoomList, 'roomId' )
       }
-      return state
+
+      return { ...state }
     case 'changeMessageList':
-      console.log( 'inininin' )
-      const { messageList, message } = action.values
+      console.log( action.values )
+      if( messageList ) {
+        console.log( 'asfasfasf' )
+        state.messageList = _.unionBy( messageList, state.messageList, 'sendUserId' )
+      }
+
       if( message && !_.isEmpty( message ) ) {
+        console.log(message )
         state.messageList = _( state.messageList )
           .filter( ( { messageId } ) => messageId !== message.messageId )
-          .concat( message )
+          .concat( [ message ] )
           .value()
-      } else {
-        state.messageList = messageList || []
+        state.messageList = [ ...state.messageList ]
+        console.log( state.messageList )
       }
-      console.log( 'changeMessageList', state )
+
+      // if( chattingRoomList ) {
+      //   state.chattingRoomList = _.unionBy( chattingRoomList, state.chattingRoomList, 'roomId' )
+      // }
+
+      // if( chattingRoom && !_.isEmpty( chattingRoom ) ) {
+      //   state.chattingRoomList = _( state.chattingRoomList )
+      //     .filter( room => room.roomId && room.roomId !== chattingRoom.roomId )
+      //     .concat( chattingRoom )
+      //     .value()
+      // } 
+
       return { ...state }
     default : 
       throw new Error( 'wrong action type' )
@@ -72,26 +80,6 @@ function reducer( state, action ) {
 
 function StoreProvider( props ) {
   const [ store, storeDispatch ] = useReducer( reducer, initialState )
-
-  useEffect( () => {
-    let userInfo = window.localStorage.getItem( 'login-info' )
-    try {
-      userInfo = JSON.parse( userInfo )
-    } catch( err ) {
-      console.error( err )
-    }
-
-    req2svr.getUserInfo( userInfo.userId )
-      .then( res => {
-        if( res.code !== 200 ) {
-          throw new Error( res )
-        }
-        storeDispatch( { type: 'initStore', values: res.payload } )
-        console.log( store )
-      } ).catch( err => {
-        console.error( err )
-      } )
-  }, [] )
   
   return (
     <storeContext.Provider value={store}>
@@ -108,7 +96,7 @@ function useStoreState() {
   return context
 }
 
-function useStateDispatch() {
+function useStoreDispatch() {
   const context = useContext( storeDispatchContext )
   return context
 }
@@ -116,5 +104,5 @@ function useStateDispatch() {
 export {
   StoreProvider,
   useStoreState,
-  useStateDispatch
+  useStoreDispatch
 }

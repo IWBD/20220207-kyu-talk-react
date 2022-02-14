@@ -1,31 +1,27 @@
 import { createContext, useContext } from 'react'
 import socketIoClient from 'socket.io-client'
-import { useStateDispatch } from '@store'
+import { useStoreDispatch } from '@store'
 
 const SocketContext = createContext()
 let _storeDispatch = () => {}
 const socket = socketIoClient( 'localhost:3001' )
 
-socket.on( 'message', function( message ) {
+socket.on( 'message', function( messageParams ) {
   console.log( 'message' )
-  _storeDispatch( { type: 'changeMessageList', values: { message } } )
+  _storeDispatch( { type: 'changeMessageList', values: messageParams } )
 } )
-
-function sendMessage( messageParams ) {
-  socket.emit('message', messageParams )
-}
 
 function login( userId ) {
   socket.emit( 'login', userId )
 }
 
 function SocketProvider( props ) {
-  const storeDispatch = useStateDispatch()
+  const storeDispatch = useStoreDispatch()
   
   _storeDispatch = storeDispatch
 
   return (
-    <SocketContext.Provider value={{sendMessage, login}}>
+    <SocketContext.Provider value={{login}}>
       {props.children}
     </SocketContext.Provider>
   )

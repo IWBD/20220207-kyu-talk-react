@@ -8,7 +8,8 @@ import { SocketProvider } from '@context/socket'
 
 const pathname = window.location.pathname
 if( pathname === '/' ) {
-  if( !window.localStorage.getItem( 'login-info' ) ) {
+  let loginInfo = window.localStorage.getItem( 'login-info' )  
+  if( !loginInfo ) {
     window.location = '/login'
   }
 } 
