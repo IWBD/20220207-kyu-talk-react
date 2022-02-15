@@ -45,33 +45,28 @@ function reducer( state, action ) {
 
       return { ...state }
     case 'changeMessageList':
-      console.log( action.values )
       if( messageList ) {
-        console.log( 'asfasfasf' )
         state.messageList = _.unionBy( messageList, state.messageList, 'sendUserId' )
       }
 
       if( message && !_.isEmpty( message ) ) {
-        console.log(message )
         state.messageList = _( state.messageList )
           .filter( ( { messageId } ) => messageId !== message.messageId )
           .concat( [ message ] )
           .value()
         state.messageList = [ ...state.messageList ]
-        console.log( state.messageList )
       }
 
-      // if( chattingRoomList ) {
-      //   state.chattingRoomList = _.unionBy( chattingRoomList, state.chattingRoomList, 'roomId' )
-      // }
+      if( chattingRoomList ) {
+        state.chattingRoomList = _.unionBy( chattingRoomList, state.chattingRoomList, 'roomId' )
+      }
 
-      // if( chattingRoom && !_.isEmpty( chattingRoom ) ) {
-      //   state.chattingRoomList = _( state.chattingRoomList )
-      //     .filter( room => room.roomId && room.roomId !== chattingRoom.roomId )
-      //     .concat( chattingRoom )
-      //     .value()
-      // } 
-
+      if( chattingRoom && !_.isEmpty( chattingRoom ) ) {
+        state.chattingRoomList = _( state.chattingRoomList )
+          .filter( room => room.roomId && room.roomId !== chattingRoom.roomId )
+          .concat( chattingRoom )
+          .value()
+      } 
       return { ...state }
     default : 
       throw new Error( 'wrong action type' )

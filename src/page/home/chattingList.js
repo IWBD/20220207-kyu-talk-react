@@ -58,10 +58,13 @@ function ChattingList() {
         }
 
         const userListStr = _( userList ).map( 'name' ).join( ' ,' )
+        const formatDate = moment( room.createDate, 'x' ).format( 'MM월 DD일' )
 
         return {
+          ...room,
           userList,
-          userListStr
+          userListStr,
+          formatDate
         }
       } ).value()
 

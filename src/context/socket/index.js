@@ -7,7 +7,6 @@ const socket = socketIoClient( 'localhost:3001' )
 let storeDispatch = () => {}
 
 socket.on( 'message', function( messageParams ) {
-  console.log( 'message' )
   storeDispatch( { type: 'changeMessageList', values: messageParams } )
 } )
 

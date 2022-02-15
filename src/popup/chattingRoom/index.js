@@ -41,7 +41,7 @@ function ChattingRoom( props ) {
       message: sendMessge, fromUserIdList 
     } ).then( res => {
       if( res.code !== 200 ) {
-        console.log( 'message fail' )
+        console.error( 'message fail' )
         return 
       }
       sendMessge.messageId = res.payload
@@ -67,7 +67,6 @@ function ChattingRoom( props ) {
   }, [props.roomId, store.chattingRoomList] )
 
   const messageList = useMemo( () => {
-    console.log( props.userList )
     return _( store.messageList )
       .filter( message => {
         return message.roomId === props.roomId &&
