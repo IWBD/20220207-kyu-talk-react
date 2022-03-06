@@ -35,6 +35,7 @@ function App() {
         throw new Error( res )
       }
       storeDispatch( { type: 'initStore', values: res.payload } )
+      storeDispatch( { type: 'updateMessageListWithChattingRoom' } )
       socket.login( loginInfo.userId )
     } ).catch( err => {
       console.error( err )

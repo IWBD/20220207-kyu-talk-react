@@ -59,29 +59,54 @@ function ChattingRoom( props ) {
     scrollRef.current.scrollTop = scrollHeight - clientHeight
   }
 
-  const chattingRoom = useMemo( () => {
-    if( props.roomId ) {
-      return {}
-    } 
-    return _.find( store.chattingRoomList, { roomId: props.roomId } ) || {}
-  }, [props.roomId, store.chattingRoomList] )
+  const messageListWidthChattingRoom = useMemo( () => {
+    return _.get( store.messageListWithChattingRoom, props.roomKey )
+  }, [store.messageListWidthChattingRoom] )
 
   const messageList = useMemo( () => {
-    console.log( props.userList )
-    return _( store.messageList )
-      .filter( message => {
-        return message.roomId === props.roomId &&
-          ( _.find( props.userList, { userId: message.sendUserId } ) || 
-            _.find( props.userList, { userId: message.userId } ) )
-      } )
-      .orderBy( 'createDate' )
-      .value()
-  }, [store, props.roomId, props.userList] )
+    return _.get( messageListWidthChattingRoom, 'messageList' ) || []
+  }, [messageListWidthChattingRoom] )
+
+  const chattingRoom = useMemo( () => {
+    const chattingRoom = _.get( messageListWidthChattingRoom, 'chattingRoom' )
+    
+    if( chattingRoom ) {
+      return chattingRoom
+    }
+
+    const firstMessage = _.minBy( messageList, 'createDate' )
+    let fromUserList
+    if( firstMessage ) {
+      if( firstMessage.sendUserId === store.user.userId ) {
+        fromUserList = [ {
+          fromUserId: firstMessage.fromUserId,
+          fromUserName: firstMessage.fromUserName
+        } ]
+      } else {
+        fromUserList = [ {
+          fromUserId: firstMessage.sendUserId,
+          fromUserName: firstMessage.sendUserName
+        } ]
+      }
+    } else {
+      fromUserList = props.fromUserList
+    }
+
+    return {
+      fromUserList,
+      roomId: null,
+      createDate: _.get( firstMessage, 'createDate' ) || null
+    }
+
+  }, [messageListWidthChattingRoom, store.user.userId] )
 
   const title = useMemo( () => {
-    return props.userList.length > 1 ? `그룹 채팅(${props.userList.length})`
-      : props.userList[0].name
-  }, [props.userList] )
+    if( chattingRoom.fromUserList.length > 1 ) {
+      return `그룹 채팅(${chattingRoom.fromUserList.length})`
+    } else {
+      return chattingRoom.fromUserList[0].fromUserName
+    }
+  }, [chattingRoom.fromUserList] )
   
   const user = useMemo( () => {
     return store.user

@@ -28,6 +28,7 @@ function SignInUser() {
       }
       window.localStorage.setItem( 'login-info', JSON.stringify( { authToken: 'agaghajgsadgdsh', userId: userId } ) )
       storeDispatch( { type: 'initStore', values: res.payload } )
+      storeDispatch( { type: 'updateMessageListWithChattingRoom' } )
       socket.login( res.payload.user.userId )
       navigate( '/' )
     } catch ( err ) {
