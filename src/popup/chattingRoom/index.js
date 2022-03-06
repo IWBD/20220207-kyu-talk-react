@@ -41,7 +41,7 @@ function ChattingRoom( props ) {
       message: sendMessge, fromUserIdList 
     } ).then( res => {
       if( res.code !== 200 ) {
-        console.log( 'message fail' )
+        console.error( 'message fail' )
         return 
       }
       sendMessge.messageId = res.payload

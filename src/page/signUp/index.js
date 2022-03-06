@@ -56,11 +56,12 @@ function SignUpUser() {
 
     try {
       const res = await req2svr.signUpUser( { userId, password, verificationPassword, name } )
-      if( res.ststus !== 200 ) {
+      if( res.status !== 200 ) {
         throw new Error( 'sign up fail' )
       }
       
-      window.localStorage.setItem( 'login-info', res.payload )
+      // window.localStorage.setItem( 'login-info', res.payload )
+      console.log( 'asdasdasdasdasdasd' )
       navigate( '/login' )
     } catch( err ) {
       console.error( err )
@@ -88,20 +89,20 @@ function SignUpUser() {
       <div className={styles.inputFiledArea}>
         <input className={styles.inputFiledArea} 
                placeholder="이름 입력"
-               value={password} 
-               onInput={onInputPassword}/>
+               value={name} 
+               onInput={onInputName}/>
       </div>
       <div className={styles.inputFiledArea}>
         <input className={styles.inputFiledArea} 
                placeholder="비밀번호"
-              value={verificationPassword} 
-              onInput={onInputVerificationPassword}/>
+              value={password} 
+              onInput={onInputPassword}/>
       </div>
       <div className={styles.inputFiledArea}>
         <input className={styles.inputFiledArea} 
                placeholder="비밀번호 확인"
-              value={name} 
-              onInput={onInputName}/>
+              value={verificationPassword} 
+              onInput={onInputVerificationPassword}/>
       </div>
       <button className={styles.signInButton} onClick={onSignUpUser}>회원가입</button>
       <button className={styles.signInButton} onClick={routingToLogin}>로그인하기</button>
