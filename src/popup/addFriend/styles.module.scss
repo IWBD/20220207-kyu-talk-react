@@ -1,0 +1,48 @@
+.wrapper {
+  height: 100%;
+  display: grid;
+  grid-template-rows: 50px minmax(0, 1fr);
+  
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    height: 50px;
+    background-color: rgba(70, 66, 66, 0.666);
+    color: #fff;
+
+    .button {
+      height: 24px;
+      margin: 0 10px;
+      cursor: pointer;
+    }
+  }
+
+  .body {
+    color: #fff;
+    height: 100%;
+    overflow: auto;
+    
+    .user_empty {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+    }
+
+    .user_list {
+      margin: 10px;
+      
+      .user {
+        height: 50px;
+        padding: 0 10px;
+        color: #fff;
+      }
+    }
+  }
+}
+
+.test {
+  color: red;
+}

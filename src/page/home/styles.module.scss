@@ -6,6 +6,11 @@
   background-color: #000;
   color: #fff;
 
+  .button {
+    margin: 0 5px;
+    cursor: pointer;
+  }
+
   .header {
     display: flex;
     align-items: center;
@@ -20,9 +25,15 @@
     .contents {
       flex: 1;
       display: flex;
+      align-items: center;
       justify-content: flex-end;
+      
+      .button {
+        height: 24px;
+      }
     }
   }
+  
 
   .body {
     padding: 0 10px;
