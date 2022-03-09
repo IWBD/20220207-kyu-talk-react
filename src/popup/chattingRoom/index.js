@@ -82,7 +82,7 @@ function ChattingRoom( props ) {
     let fromUserList
     if( chattingRoom ) {
       try {
-        fromUserList = JSON.parse( chattingRoom.fromUserList )
+        fromUserList = JSON.parse( chattingRoom.roomUser )
       } catch( err ) {
         console.error( err )
         return null
@@ -95,7 +95,6 @@ function ChattingRoom( props ) {
   }, [chattingRoom, props.fromUserList] )
 
   const messageList = useMemo( () => {
-    console.log( store.messageList )
     return _( store.messageList )
       .filter( message => {
         if( message.roomId ) {

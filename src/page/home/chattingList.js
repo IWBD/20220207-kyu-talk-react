@@ -10,39 +10,9 @@ function ChattingList() {
   const store = useStoreState()
   const popupManager = usePopupManager()
 
-  // const renderList = useMemo( () => {
-  //   return _( store.messageListWithChattingRoom )
-  //     .map( ( { chattingRoom, messageList }, key ) => {
-  //       let recentlyMessage = _.maxBy( messageList, 'createDate' )
-
-  //       if( !recentlyMessage ) {
-          
-  //       }
-
-  //       const date = _.get( recentlyMessage, 'createDate' ) || _.get( chattingRoom, 'createDate' )
-  //       const formatDate = moment( date, 'x' ).format( 'MM월 DD일' )
-
-  //       let text = _.get( recentlyMessage, 'text' ) || '' 
-        
-  //       let userStr
-  //       if( chattingRoom ) {
-  //         userStr = chattingRoom.roomUser
-  //       } else if( recentlyMessage.sendUserId === store.user.userId ) {
-  //         userStr = recentlyMessage.fromUserName
-  //       } else {
-  //         userStr = recentlyMessage.sendUserName
-  //       }
-        
-  //       return {
-  //         date, formatDate, text, userStr, key
-  //       }
-  //     } ).orderBy( 'date', 'desc' ).value()
-  // }, [store.messageListWithChattingRoom, store.user.userId] )
-
   const userRelationMap = useMemo( () => {
     return _.keyBy( store.userRelationList, 'userId' )
   }, [ store.userRelationList ] )
-
 
   const renderList = useMemo( () => {
     const parsedChattingRoomList = _.map( store.chattingRoomList, chattingRoom => {
@@ -121,14 +91,15 @@ function ChattingList() {
       
   }, [ store.chattingRoomList, store.messageList, userRelationMap, store.user.userId ] )
 
-  const openChattingRoom = ( roomKey ) => {
-    popupManager.open( ChattingRoom, { roomKey } )
+  const openChattingRoom = ( messageFaceInfo ) => {
+    const { fromUserList, roomId } = messageFaceInfo
+    popupManager.open( ChattingRoom, { fromUserList, roomId } )
   } 
    
   return (
     <>
       { renderList && renderList.map( item => {
-        return <div className={styles.room_area} key={item.key} onClick={() => openChattingRoom( item.key )}>
+        return <div className={styles.room_area} key={item.key} onClick={() => openChattingRoom( item )}>
           <div className={styles.contents}>
             <div className={styles.room_title}>
               <div className={styles.text_gard}>
