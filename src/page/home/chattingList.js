@@ -79,7 +79,7 @@ function ChattingList() {
           formatDate: moment( firstMessage.createDate, 'x' ).format( 'MM월 DD일' ),
           text: firstMessage.text,
           userStr: fromUser.name,
-          fromUserList: [ fromUser ],
+          fromUserList: [ fromUser.userId ],
           key
         }
       } ).value()

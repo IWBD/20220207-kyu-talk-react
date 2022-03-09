@@ -91,6 +91,7 @@ function ChattingRoom( props ) {
       fromUserList = props.fromUserList
     }
 
+    console.log( fromUserList )
     return fromUserList
   }, [chattingRoom, props.fromUserList] )
 
