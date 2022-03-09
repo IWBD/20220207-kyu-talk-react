@@ -1,3 +1,4 @@
+import './styles.scss'
 import _ from 'lodash'
 import { useState, useEffect, useMemo } from 'react'
 
@@ -42,26 +43,18 @@ function CustomCheckBox( props ) {
   }, [props.falseValue] )
 
   const isChecked = useMemo( () => {
-    return isMultiple ? _.includes( props.value, value ) : trueValue === value
-  }, [props.value, value] )
+    return isMultiple ? _.includes( props.value, trueValue ) : trueValue === value
+  }, [props.value, value, isMultiple, trueValue] )
 
   useEffect( () => {
     isChecked && setValue( trueValue )   
-    // return () => {
-    //   console.log( props.value )
-    // }
-  }, [props.value] )
+  }, [isChecked, trueValue] )
   
   return ( 
-    <div className="custom-check-box-wrapper">
-      <div className="check-box" onClick={() => onClickCheckBox()}>
-        { isChecked ? 
-          <Icon>check_circle</Icon> :
-          <Icon>circle</Icon>}
-      </div>
-      <div className="label">
-        
-      </div>
+    <div className="custom-check-box-wrapper" onClick={() => onClickCheckBox()}>
+      { isChecked ? 
+        <Icon style={{...props.iconStyle}}>check_circle</Icon> :
+        <Icon style={{...props.iconStyle}}>circle</Icon>} 
     </div> 
   )
 }

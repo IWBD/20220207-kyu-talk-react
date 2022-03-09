@@ -6,7 +6,7 @@ const initialState = {
     userId: null,
     name: null,
   },
-  friendList: [],
+  userRelationList: [],
   chattingRoomList: [],
   messageList: [],
   messageListWithChattingRoom: []
@@ -19,23 +19,28 @@ function reducer( state, action ) {
   switch( action.type ) {
     case 'initStore':
       state.user = action.values.user
-      state.friendList = action.values.friendList
+      state.userRelationList = action.values.userRelationList
       state.chattingRoomList = action.values.chattingRoomList
       state.messageList = action.values.messageList
       return { ...state }
     case 'changeUser':
       state.user = action.values
       return state
-    case 'changeFriendList': 
-      state.friendList = action.values.friendList || []
+    case 'updateUserRelationList': 
+      const updateUserRelationList = _.get( action.values, 'userRelationList' ) || []
+      state.userRelationList = _( state.userRelationList )
+        .filter( userRelation => !_.find( updateUserRelationList, { userId: userRelation.userId } ))
+        .concat( updateUserRelationList ).value()
       return { ...state }
     case 'updateChattingRoomList': 
       const chattingRoomList = _.get( action.values, 'chattingRoomList' ) || []
       state.chattingRoomList = _.concat( state.chattingRoomList, chattingRoomList )
       return { ...state }
     case 'updateMessageList':
-      const messageList = _.get( action.values, 'messageList' ) || []
-      state.messageList = _.concat( state.messageList, messageList )
+      const updateMessageList = _.get( action.values, 'messageList' ) || []
+      state.messageList = _( state.messageList )
+        .filter( ( { messageId } ) => !_.find( updateMessageList, { messageId } ) )
+        .concat( updateMessageList ).value()
       return { ...state }
     case 'updateMessageListWithChattingRoom': 
       const msgListWithChattingRoom = _( state.messageList )

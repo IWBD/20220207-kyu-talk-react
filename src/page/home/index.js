@@ -1,5 +1,7 @@
 import styles from './styles.module.scss'
 import { useState, useMemo } from 'react'
+import { useStoreDispatch } from '@store'
+import { usePopupManager } from '@context/popupManager'
 
 import Icon from '@component/icon'
 
@@ -9,10 +11,10 @@ import FriendList from './friendList'
 import AddFriend from '@popup/addFriend'
 import AddChattingRoom from '@popup/addChattingRoom'
 import SearchUser from '@popup/searchUser'
-import { usePopupManager } from '@context/popupManager'
 
 function Home() {
   const [ tabs, setTabs ] = useState( 'friend' )
+  const storeDispatch = useStoreDispatch()
   const popupManager = usePopupManager()
  
   const onChangeTabs = ( tabs ) => {
@@ -27,8 +29,10 @@ function Home() {
     popupManager.open( AddFriend )
   }
 
-  const openMakeChatting = () => {
-    popupManager.open( AddChattingRoom )
+  const openMakeChatting = async () => {
+    const chattingRoom = await popupManager.open( AddChattingRoom )
+    storeDispatch( { type: 'updateChattingRoomList', values: [ chattingRoom ] } )
+    storeDispatch( { type: 'updateMessageListWithChattingRoom' } )
   }
 
   const headerTitle = useMemo( () => {

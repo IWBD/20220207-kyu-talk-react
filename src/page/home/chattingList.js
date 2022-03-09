@@ -1,46 +1,125 @@
 import styles from './styles.module.scss'
 import _ from 'lodash'
-import { useMemo, useEffect } from 'react'
+import { useMemo } from 'react'
 import { useStoreState } from '@store'
 import moment from 'moment'
 import { usePopupManager } from '@context/popupManager' 
 import ChattingRoom from '@popup/chattingRoom'
-// const params = {
-//   userList: [ {
-//     userId: props.userId,
-//     name: props.name,
-//   } ],
-//   chattingRoom: null,
-//   maxSendDate,
-// } 
+
 function ChattingList() {
   const store = useStoreState()
   const popupManager = usePopupManager()
 
+  // const renderList = useMemo( () => {
+  //   return _( store.messageListWithChattingRoom )
+  //     .map( ( { chattingRoom, messageList }, key ) => {
+  //       let recentlyMessage = _.maxBy( messageList, 'createDate' )
+
+  //       if( !recentlyMessage ) {
+          
+  //       }
+
+  //       const date = _.get( recentlyMessage, 'createDate' ) || _.get( chattingRoom, 'createDate' )
+  //       const formatDate = moment( date, 'x' ).format( 'MM월 DD일' )
+
+  //       let text = _.get( recentlyMessage, 'text' ) || '' 
+        
+  //       let userStr
+  //       if( chattingRoom ) {
+  //         userStr = chattingRoom.roomUser
+  //       } else if( recentlyMessage.sendUserId === store.user.userId ) {
+  //         userStr = recentlyMessage.fromUserName
+  //       } else {
+  //         userStr = recentlyMessage.sendUserName
+  //       }
+        
+  //       return {
+  //         date, formatDate, text, userStr, key
+  //       }
+  //     } ).orderBy( 'date', 'desc' ).value()
+  // }, [store.messageListWithChattingRoom, store.user.userId] )
+
+  const userRelationMap = useMemo( () => {
+    return _.keyBy( store.userRelationList, 'userId' )
+  }, [ store.userRelationList ] )
+
+
   const renderList = useMemo( () => {
-    return _( store.messageListWithChattingRoom )
-      .map( ( { chattingRoom, messageList }, key ) => {
-        const recentlyMessage = _.maxBy( messageList, 'createDate' )
+    const parsedChattingRoomList = _.map( store.chattingRoomList, chattingRoom => {
+      let date, text, userStr, fromUserList
+      const firstMessage = _( store.messageList )
+        .filter( ( { roomId } ) => roomId === chattingRoom.roomId )
+        .maxBy( 'createDate' )
+      
+      if( firstMessage ) {
+        date = firstMessage.createDate
+        text = firstMessage.text
+      } else {
+        date = chattingRoom.createDate 
+        text = '' 
+      }
 
-        const date = _.get( recentlyMessage, 'createDate' ) || _.get( chattingRoom, 'createDate' )
-        const formatDate = moment( date, 'x' ).format( 'MM월 DD일' )
+      try {
+        fromUserList = JSON.parse( chattingRoom.roomUser )
+      } catch( err ) {
+        console.error( err )
+      }
+      
+      userStr = _( fromUserList ).map( userId => {
+        return userId === store.user.userId ? store.user.name :
+           _.get( userRelationMap, `${userId}.name` ) || '알수없음'
+      } ).join( ',' )
 
-        let text = _.get( recentlyMessage, 'text' ) || '' 
-        
-        let userStr
-        if( chattingRoom ) {
-          userStr = chattingRoom.userList
-        } else if( recentlyMessage.sendUserId === store.user.userId ) {
-          userStr = recentlyMessage.fromUserName
+      return {
+        date, 
+        userStr,
+        text, 
+        fromUserList,
+        formatDate: moment( date, 'x' ).format( 'MM월 DD일' ),
+        roomId: chattingRoom.roomId,
+        key: `room_${chattingRoom.roomId}`
+      }
+    } )
+
+    const persedMessageList = _( store.messageList )
+      .filter( ( { roomId } ) => !roomId )
+      .map( message => {
+        let key 
+        if( message.sendUserId === store.user.userId ) {
+          key = `user_${message.fromUserId}`
         } else {
-          userStr = recentlyMessage.sendUserName
+          key = `user_${message.sendUserId}`
         }
+        return { ...message, key }
+      } )
+      .groupBy( 'key' )
+      .map( ( messageList, key ) => {
+        const firstMessage = _.maxBy( messageList, 'createDate' )
         
-        return {
-          date, formatDate, text, userStr, key
+        let fromUser
+        if( firstMessage.sendUserId === store.user.userId ) {
+          fromUser = firstMessage.fromUserId
+        } else {
+          fromUser = firstMessage.sendUserId
         }
-      } ).orderBy( 'date', 'desc' ).value()
-  }, [store.messageListWithChattingRoom] )
+        fromUser = _.get( userRelationMap, fromUser ) || {}
+
+        return {
+          date: firstMessage.createDate,
+          formatDate: moment( firstMessage.createDate, 'x' ).format( 'MM월 DD일' ),
+          text: firstMessage.text,
+          userStr: fromUser.name,
+          fromUserList: [ fromUser ],
+          key
+        }
+      } ).value()
+
+      return _( parsedChattingRoomList )
+        .concat( persedMessageList )
+        .orderBy( 'createDate', 'desc' )
+        .value()
+      
+  }, [ store.chattingRoomList, store.messageList, userRelationMap, store.user.userId ] )
 
   const openChattingRoom = ( roomKey ) => {
     popupManager.open( ChattingRoom, { roomKey } )

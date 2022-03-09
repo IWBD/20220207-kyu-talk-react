@@ -13,11 +13,8 @@ function Profile( props ) {
 
   const onOpenChatting = async () => {
     const params = {
-      userList: [ {
-        userId: props.userId,
-        name: props.name,
-      } ],
-      roomId: null 
+      fromUserList: [ props.userId ],
+      roomKey: `user_${props.userId}` 
     } 
 
     popupManager.open( ChattingRoom, params )
@@ -27,12 +24,12 @@ function Profile( props ) {
     popupManager.close( props.popupKey )
   }
 
-  const addFriend = () => {
+  const onAddFriend = () => {
     req2svr.addFriend( store.user.userId, props.userId ).then( res => {
       if( res.code !== 200 ) {
         throw new Error( res )
       }
-      storeDispatch( { type: 'changeFriendList', values: { friendList: res.payload } } )
+      storeDispatch( { type: 'updateUserRelationList', values: { userRelationList: [ res.payload ] } } )
     } ).catch( err => {
       console.error( err )
       alert( '친구 추가에 실패하였습니다.' )
@@ -40,8 +37,9 @@ function Profile( props ) {
   }
 
   const isFriend = useMemo( () => {
-    return !!_.find( store.friendList, { userId: props.userId } )
-  }, [props.userId, store.friendList] )
+    const userRelation = _.find( store.userRelationList, { userId: props.userId } )
+    return userRelation && userRelation.isFriend
+  }, [props.userId, store.userRelationList] )
   
   return (
     <div className={styles.wrapper}>
@@ -52,8 +50,8 @@ function Profile( props ) {
         {props.name }
       </div>
       <div className={styles.footer}>
-        <button onClick={() => onOpenChatting()}>1대1 채팅</button>
-        { !isFriend && <button onClick={() => addFriend()}>친구 추가</button> }
+        <button onClick={onOpenChatting}>1대1 채팅</button>
+        { !isFriend && <button onClick={onAddFriend}>친구 추가</button> }
       </div>
     </div> 
   )

@@ -7,13 +7,13 @@ function TextFiled( props ) {
   const onChange = ( event ) => {
     if( props.onChange ) {
       props.onChange( event.target.value )
-    } else {
-      setValue( event.target.value )
-    }
+    } 
+    
+    setValue( event.target.value )
   }
 
   useEffect( () => {
-    setValue( props.value )
+    // setValue( props.value )
   }, [props.value] )
 
   return (

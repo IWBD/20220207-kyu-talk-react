@@ -23,29 +23,35 @@ function ChattingRoom( props ) {
   }
 
   const sendMessage = () => {
-    const fromUserIdList = _.map( props.userList, 'userId' )
     const sendMessge = {
-      roomId: props.roomId,
+      roomId: props.roomId || null,
       sendUserId: store.user.userId,
-      name: store.user.name,
       text: message,
       createDate: new Date().getTime(),
-      notReadCount: fromUserIdList.length,
+      notReadCount: fromUserList.length,
     }
-
-    if( !sendMessge.roomId ) {
-      sendMessge.userId = _.get( props.userList, '0.userId' )
-    }
-
+     
     req2svr.sendMessage( { 
-      message: sendMessge, fromUserIdList 
+      message: sendMessge, 
+      fromUserIdList: fromUserList || null
     } ).then( res => {
       if( res.code !== 200 ) {
         console.error( 'message fail' )
         return 
       }
-      sendMessge.messageId = res.payload
-      storeDispatch( { type: 'changeMessageList', values: { message: sendMessge, chattingRoom: chattingRoom } } )
+      
+      const { chattingRoom, message, userRelationList } = res.payload 
+
+      if( userRelationList && !_.isEmpty( userRelationList ) ) {
+        storeDispatch( { type: 'updateUserRelationList', values: { messageList: userRelationList } } )
+      }
+
+      if( chattingRoom && !_.isEmpty( chattingRoom ) ) {
+        storeDispatch( { type: 'updateChattingRoomList', values: { messageList: [ chattingRoom ] } } )
+      }
+
+      storeDispatch( { type: 'updateMessageList', values: { messageList: [ message ] } } )
+
       moveScrollToBottom()
     } ).catch( err => {
       console.error( err )
@@ -54,64 +60,108 @@ function ChattingRoom( props ) {
     } )
   }
 
+  const userRelationMap = useMemo( () => {
+    return _.keyBy( store.userRelationList, 'userId' )  
+  }, [ store.userRelationList ] )
+
   const moveScrollToBottom = () => {
     const { scrollHeight, clientHeight } = scrollRef.current
     scrollRef.current.scrollTop = scrollHeight - clientHeight
   }
 
-  const messageListWidthChattingRoom = useMemo( () => {
-    return _.get( store.messageListWithChattingRoom, props.roomKey )
-  }, [store.messageListWidthChattingRoom] )
-
-  const messageList = useMemo( () => {
-    return _.get( messageListWidthChattingRoom, 'messageList' ) || []
-  }, [messageListWidthChattingRoom] )
+  // const messageList = useMemo( () => {
+  //   // return _.get( store.messageListWithChattingRoom, `${props.roomKey}.messageList` ) || []
+  //   return
+  // }, [store.messageListWithChattingRoom, props.roomKey] )
 
   const chattingRoom = useMemo( () => {
-    const chattingRoom = _.get( messageListWidthChattingRoom, 'chattingRoom' )
-    
-    if( chattingRoom ) {
-      return chattingRoom
-    }
+    return props.roomId ? _.find( store.chattingRoomList, { roomId: props.roomId } ) : null
+  }, [ props.roomId, store.chattingRoomList ] )
 
-    const firstMessage = _.minBy( messageList, 'createDate' )
+  const fromUserList = useMemo( () => {
     let fromUserList
-    if( firstMessage ) {
-      if( firstMessage.sendUserId === store.user.userId ) {
-        fromUserList = [ {
-          fromUserId: firstMessage.fromUserId,
-          fromUserName: firstMessage.fromUserName
-        } ]
-      } else {
-        fromUserList = [ {
-          fromUserId: firstMessage.sendUserId,
-          fromUserName: firstMessage.sendUserName
-        } ]
+    if( chattingRoom ) {
+      try {
+        fromUserList = JSON.parse( chattingRoom.fromUserList )
+      } catch( err ) {
+        console.error( err )
+        return null
       }
     } else {
       fromUserList = props.fromUserList
     }
 
-    return {
-      fromUserList,
-      roomId: null,
-      createDate: _.get( firstMessage, 'createDate' ) || null
-    }
+    return fromUserList
+  }, [chattingRoom, props.fromUserList] )
 
-  }, [messageListWidthChattingRoom, store.user.userId] )
+  const messageList = useMemo( () => {
+    console.log( store.messageList )
+    return _( store.messageList )
+      .filter( message => {
+        if( message.roomId ) {
+          return message.roomId === ( props.roomId || null )
+        } 
+
+        if( message.sendUserId === store.user.userId ) {
+          return message.fromUserId === fromUserList[0]
+        }
+        
+        return message.fromUserId === store.user.userId
+      } )
+      .map( message => {
+        let sendUserName
+        if( message.sendUserId === store.user.userId ) {
+          sendUserName = store.user.name
+        } else {
+          sendUserName = _.get( userRelationMap, `${message.sendUserId}.name` )
+        }
+        return { ...message, sendUserName }
+      } )
+      .orderBy( 'createDate' ).value()
+  }, [store.messageList, store.user.name, props.roomId, store.user.userId, fromUserList, userRelationMap] )
+
+  
+
+  // const chattingRoom = useMemo( () => {
+  //   // const test = _.get( store.messageListWithChattingRoom, props.roomKey ) || 
+
+  //   // if( chattingRoom ) {
+  //   //   return chattingRoom
+  //   // }
+
+  //   // const firstMessage = _.minBy( messageList, 'createDate' )
+  //   // let fromUserList
+  //   // if( firstMessage ) {
+  //   //   if( firstMessage.sendUserId === store.user.userId ) {
+  //   //     fromUserList = [ {
+  //   //       fromUserId: firstMessage.fromUserId,
+  //   //       fromUserName: _.get( userRelationMap, `${firstMessage.fromUserId}.name` )
+  //   //     } ]
+  //   //   } else {
+  //   //     fromUserList = [ {
+  //   //       fromUserId: firstMessage.sendUserId,
+  //   //       fromUserName: _.get( userRelationMap, `${firstMessage.sendUserId}.name` )
+  //   //     } ]
+  //   //   }
+  //   // } else {
+  //   // let fromUserList = props.fromUserList
+  //   // }
+
+  //   return {
+  //     fromUserList,
+  //     roomId: null,
+  //     createDate: _.get( firstMessage, 'createDate' ) || null
+  //   }
+  // }, [store.messageListWithChattingRoom, props.fromUserList, userRelationMap, props.roomKey] )
 
   const title = useMemo( () => {
-    if( chattingRoom.fromUserList.length > 1 ) {
-      return `그룹 채팅(${chattingRoom.fromUserList.length})`
+    if( chattingRoom ) {
+      return `그룹 채팅(${fromUserList.length})`
     } else {
-      return chattingRoom.fromUserList[0].fromUserName
+      return _.get( userRelationMap, `${fromUserList[0]}.name` ) || '알수없음'
     }
-  }, [chattingRoom.fromUserList] )
+  }, [chattingRoom, fromUserList, userRelationMap] )
   
-  const user = useMemo( () => {
-    return store.user
-  }, [store.user] ) 
-
   useEffect( () => {
     const { scrollHeight, clientHeight, scrollTop } = scrollRef.current
     if( scrollHeight - clientHeight - scrollTop < 150 ) {
@@ -133,7 +183,7 @@ function ChattingRoom( props ) {
       <div className={styles.contents}>
         <div className={styles.chatting} ref={scrollRef}>
           { messageList && messageList.map( message => {
-            return message.sendUserId === user.userId ?
+            return message.sendUserId === store.user.userId ?
               <div className={`${styles.message_field} ${styles.my_message}`} key={message.messageId}>
                 <div className={styles.text}>{message.text}</div>
               </div> : 
