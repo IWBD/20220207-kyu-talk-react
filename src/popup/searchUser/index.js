@@ -4,6 +4,8 @@ import { useState, useMemo } from 'react'
 import { usePopupManager } from '@context/popupManager'
 import { useStoreState } from '@store'
 import Profile from '@popup/profile'
+import TextField from '@component/textField'
+import Icon from '@component/icon'
  
 function SearchUser( props ) {
   const [ searchWord, setSearchWord ] = useState( '' )
@@ -11,19 +13,23 @@ function SearchUser( props ) {
   const popupManager = usePopupManager()
   const store = useStoreState()
   
-  const onInputSearchWord = ( event ) => {
-    setSearchWord( event.target.value )
+  const onInputSearchWord = ( value ) => {
+    setSearchWord( value )
   }
 
   const filteredFreind = useMemo( () => {
-    if( !searchWord ) {
-      return store.friendList
-    } else {
-      return _.filter( store.friendList, friend => {
-        return _.includes( friend.name, searchWord ) || _.includes( friend.userId, searchWord )
-      } )
-    }
-  }, [store.friendList, searchWord] )
+    return _.filter( store.userRelationList, userRelation => {
+      if( !userRelation.isFriend ) {
+        return false
+      }
+
+      if( !searchWord ) {
+        return true
+      }
+
+      return _.includes( userRelation.name, searchWord ) || _.includes( userRelation.userId, searchWord )
+    } )
+  }, [store.userRelationList, searchWord] )
 
   const onOpenProfile = ( user ) => {
     popupManager.open( Profile, user )
@@ -36,8 +42,12 @@ function SearchUser( props ) {
   return (
     <div className={styles.wrapper}>
       <div className={styles.header}>
-        <button className={styles.button} onClick={() => closePopup()}>취소</button>
-        <input value={searchWord} onInput={( event ) => onInputSearchWord( event )}></input>
+        <div className={styles.button} onClick={closePopup}>
+          <Icon>close</Icon>
+        </div>
+        <TextField value={searchWord}
+                   placeholder="아이디 혹은 이름 입력"
+                   onChange={onInputSearchWord}></TextField>
       </div>
       <div className={styles.body}>
         { filteredFreind.length < 1 ? <div className={styles.user_empty}>

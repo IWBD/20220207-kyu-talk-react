@@ -6,6 +6,7 @@ import { usePopupManager } from '@context/popupManager'
 import { useMemo } from 'react'
 import { useStoreState, useStoreDispatch } from '@store'
 import req2svr from './req2svr'
+import Icon from '@component/icon'
 
 function ChattingRoom( props ) { 
   const [ message, setMessage ] = useState( '' )
@@ -43,11 +44,11 @@ function ChattingRoom( props ) {
       const { chattingRoom, message, userRelationList } = res.payload 
 
       if( userRelationList && !_.isEmpty( userRelationList ) ) {
-        storeDispatch( { type: 'updateUserRelationList', values: { messageList: userRelationList } } )
+        storeDispatch( { type: 'updateUserRelationList', values: { userRelationList: userRelationList } } )
       }
 
       if( chattingRoom && !_.isEmpty( chattingRoom ) ) {
-        storeDispatch( { type: 'updateChattingRoomList', values: { messageList: [ chattingRoom ] } } )
+        storeDispatch( { type: 'updateChattingRoomList', values: { chattingRoomList: [ chattingRoom ] } } )
       }
 
       storeDispatch( { type: 'updateMessageList', values: { messageList: [ message ] } } )
@@ -69,11 +70,6 @@ function ChattingRoom( props ) {
     scrollRef.current.scrollTop = scrollHeight - clientHeight
   }
 
-  // const messageList = useMemo( () => {
-  //   // return _.get( store.messageListWithChattingRoom, `${props.roomKey}.messageList` ) || []
-  //   return
-  // }, [store.messageListWithChattingRoom, props.roomKey] )
-
   const chattingRoom = useMemo( () => {
     return props.roomId ? _.find( store.chattingRoomList, { roomId: props.roomId } ) : null
   }, [ props.roomId, store.chattingRoomList ] )
@@ -91,15 +87,14 @@ function ChattingRoom( props ) {
       fromUserList = props.fromUserList
     }
 
-    console.log( fromUserList )
     return fromUserList
   }, [chattingRoom, props.fromUserList] )
 
   const messageList = useMemo( () => {
     return _( store.messageList )
       .filter( message => {
-        if( message.roomId ) {
-          return message.roomId === ( props.roomId || null )
+        if( props.roomId ) {
+          return message.roomId === props.roomId
         } 
 
         if( message.sendUserId === store.user.userId ) {
@@ -119,40 +114,6 @@ function ChattingRoom( props ) {
       } )
       .orderBy( 'createDate' ).value()
   }, [store.messageList, store.user.name, props.roomId, store.user.userId, fromUserList, userRelationMap] )
-
-  
-
-  // const chattingRoom = useMemo( () => {
-  //   // const test = _.get( store.messageListWithChattingRoom, props.roomKey ) || 
-
-  //   // if( chattingRoom ) {
-  //   //   return chattingRoom
-  //   // }
-
-  //   // const firstMessage = _.minBy( messageList, 'createDate' )
-  //   // let fromUserList
-  //   // if( firstMessage ) {
-  //   //   if( firstMessage.sendUserId === store.user.userId ) {
-  //   //     fromUserList = [ {
-  //   //       fromUserId: firstMessage.fromUserId,
-  //   //       fromUserName: _.get( userRelationMap, `${firstMessage.fromUserId}.name` )
-  //   //     } ]
-  //   //   } else {
-  //   //     fromUserList = [ {
-  //   //       fromUserId: firstMessage.sendUserId,
-  //   //       fromUserName: _.get( userRelationMap, `${firstMessage.sendUserId}.name` )
-  //   //     } ]
-  //   //   }
-  //   // } else {
-  //   // let fromUserList = props.fromUserList
-  //   // }
-
-  //   return {
-  //     fromUserList,
-  //     roomId: null,
-  //     createDate: _.get( firstMessage, 'createDate' ) || null
-  //   }
-  // }, [store.messageListWithChattingRoom, props.fromUserList, userRelationMap, props.roomKey] )
 
   const title = useMemo( () => {
     if( chattingRoom ) {
@@ -176,9 +137,11 @@ function ChattingRoom( props ) {
   return (
     <div className={styles.wrapper}>
       <div className={styles.header}>
-        <button className={styles.button} onClick={() => closePopup()}>닫기</button>
+        <div className={styles.button} onClick={() => closePopup()}>
+          <Icon>close</Icon>
+        </div>
         { title }
-        <button className={styles.button} onClick={() => closePopup()}>닫기</button>
+        <div className={styles.button}></div>
       </div>
       <div className={styles.contents}>
         <div className={styles.chatting} ref={scrollRef}>
@@ -188,7 +151,7 @@ function ChattingRoom( props ) {
                 <div className={styles.text}>{message.text}</div>
               </div> : 
               <div className={styles.message_field} key={message.messageId}>
-                <div className={styles.name}>{message.name}</div>
+                <div className={styles.name}>{message.sendUserName}</div>
                 <div className={styles.text}>{message.text}</div>
               </div> 
           } ) }
@@ -196,9 +159,9 @@ function ChattingRoom( props ) {
         <div className={styles.textarea_field}>
           <textarea className={styles.textarea}
                     value={message}
-                    onInput={( event ) => onInputMessage( event )}></textarea>
-          <button className={styles.send_button}
-                  onClick={() => sendMessage()}>보내기</button>
+                    onInput={onInputMessage}></textarea>
+          <div className={styles.send_button}
+                  onClick={sendMessage}>보내기</div>
         </div>
       </div>
     </div>

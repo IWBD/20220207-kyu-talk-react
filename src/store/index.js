@@ -33,49 +33,16 @@ function reducer( state, action ) {
         .concat( updateUserRelationList ).value()
       return { ...state }
     case 'updateChattingRoomList': 
-      const chattingRoomList = _.get( action.values, 'chattingRoomList' ) || []
-      state.chattingRoomList = _.concat( state.chattingRoomList, chattingRoomList )
+      const updateChattingRoomList = _.get( action.values, 'chattingRoomList' ) || []
+      state.chattingRoomList = _( state.chattingRoomList )
+        .filter( chattingRoom => !_.find( updateChattingRoomList, { roomId: chattingRoom.roomId } ))
+        .concat( updateChattingRoomList ).value()
       return { ...state }
     case 'updateMessageList':
       const updateMessageList = _.get( action.values, 'messageList' ) || []
       state.messageList = _( state.messageList )
         .filter( ( { messageId } ) => !_.find( updateMessageList, { messageId } ) )
         .concat( updateMessageList ).value()
-      return { ...state }
-    case 'updateMessageListWithChattingRoom': 
-      const msgListWithChattingRoom = _( state.messageList )
-        .map( message => {
-          return { 
-            ...message,
-            key: message.roomId ? `room_${message.roomId}` : 
-              message.sendUserId === state.user.userId ? `user_${message.fromUserId}` : 
-              `user_${message.sendUserId}`
-          }
-        } )
-        .groupBy( 'key' )
-        .mapValues( messageList => {
-          const roomId = _.find( messageList, 'roomId' )
-          const chattingRoom = roomId ? _.find( state.chattingRoomList, { roomId } ) : null          
-          return { messageList, chattingRoom }
-        } ).value()
-
-      const emptyMsgListWithChattingRoom = _( state.chattingRoomList )
-        .filter( ( { roomId } ) => !_.find( state.messageList, { roomId } ) )
-        .map( chattingRoom => {
-          return {
-            chattingRoom,
-            key: `room_${chattingRoom.roomId}`,
-          }
-        } )
-        .keyBy( 'key' )
-        .mapValues( ( { chattingRoom } ) => {
-          return {
-            chattingRoom,
-            messageList: null
-          }
-        } ).value()
-
-      state.messageListWithChattingRoom = { ...msgListWithChattingRoom, ...emptyMsgListWithChattingRoom }
       return { ...state }
     default : 
       throw new Error( 'wrong action type' )

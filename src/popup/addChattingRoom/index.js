@@ -31,10 +31,17 @@ function AddChattingRoom( props ) {
 
   const filteredFriendList = useMemo( () => {
     const trimSearchWord = searchWord.trim() 
-    return _.filter( store.friendList, friend => {
-      return _.includes( friend.name, trimSearchWord ) || _.includes( friend.userId, trimSearchWord )
+    return _.filter( store.userRelationList, userRelation => {
+      if( !userRelation.isFriend ) {
+        return false
+      }
+      if( !trimSearchWord ) {
+        return true
+      }
+      return userRelation.isFriend && 
+        ( _.includes( userRelation.name, trimSearchWord ) || _.includes( userRelation.userId, trimSearchWord ) )
     } )
-  }, [store.friendList, searchWord] )
+  }, [store.userRelationList, searchWord] )
 
   const onAddChattingRoom = async () => {
     const createUserId = _.get( store, 'user.userId' )

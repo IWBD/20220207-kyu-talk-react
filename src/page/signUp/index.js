@@ -1,8 +1,10 @@
-import styles from './styles.module.scss'
+// import styles from './styles.module.scss'
+import './styles.scss'
 import _ from 'lodash'
-import React, { useState, useCallback, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import req2svr from './req2svr'
 import { useNavigate } from 'react-router-dom'
+import TextFiled from '@component/textField'
 
 
 // setState는 비동기 함수라 항상 최신값을 유지한다는 보장이 없다. 
@@ -15,23 +17,27 @@ function SignUpUser() {
   const [ userIdAvailable, setUserIdAvailable ] = useState( '' )
   const navigate = useNavigate()
 
-  const onInputUserId = useCallback( event => {
-    setUserId( event.target.value )
-  }, [] )
+  const onChangeUserId = ( value ) => {
+    setUserId( value )
+  }
 
-  const onInputPassword = useCallback( event => {
-    setPassword( event.target.value )
-  }, [] )
+  const onChangePassword = ( value ) => {
+    setPassword( value )
+  }
 
-  const onInputVerificationPassword = useCallback( event => {
-    setVerificationPassword( event.target.value )
-  }, [] )
+  const onChangeVerificationPassword = ( value ) => {
+    setVerificationPassword( value )
+  }
 
-  const onInputName = useCallback( event => {
-    setName( event.target.value )
-  }, [] )
+  const onChangeName = ( value ) => {
+    setName( value )
+  }
 
-  const checkDuplication = useCallback( async () => {
+  const checkDuplication = async () => {
+    if( !userId ) {
+      return 
+    }
+
     try {
       const res = await req2svr.checkDuplication( userId )
       const isAvailable = _.get( res, 'data.payload.isAvailable' )
@@ -40,9 +46,9 @@ function SignUpUser() {
       console.error( err )
       setUserIdAvailable( '' )  
     }
-  }, [userId] )
+  }
 
-  const onSignUpUser = useCallback( async () => {
+  const onSignUpUser = async () => {
     if( !userId || !password || !verificationPassword || !name ) {
       alert( '비어있는 필드가 있습니다.' )
       return
@@ -59,14 +65,11 @@ function SignUpUser() {
       if( res.status !== 200 ) {
         throw new Error( 'sign up fail' )
       }
-      
-      // window.localStorage.setItem( 'login-info', res.payload )
-      console.log( 'asdasdasdasdasdasd' )
       navigate( '/login' )
     } catch( err ) {
       console.error( err )
     }
-  }, [ userId, password, verificationPassword, name, userIdAvailable, navigate ] )
+  }
 
   function routingToLogin() {
     navigate( '/login' )
@@ -77,35 +80,30 @@ function SignUpUser() {
   }, [userId] )
 
   return (
-    <div className={styles.signUpUserWrapper}>
-      <div className={styles.title}>sign</div> 
-      <div className={styles.inputFiledArea}>
-        <input className={styles.inputFiledArea} 
-               placeholder="아이디 입력"
-               value={userId} 
-               onChange={onInputUserId}/>
-        <button onClick={checkDuplication}>{ userIdAvailable ? '확인 완료' : '중복 확인' }</button>
-      </div>
-      <div className={styles.inputFiledArea}>
-        <input className={styles.inputFiledArea} 
-               placeholder="이름 입력"
-               value={name} 
-               onInput={onInputName}/>
-      </div>
-      <div className={styles.inputFiledArea}>
-        <input className={styles.inputFiledArea} 
-               placeholder="비밀번호"
-              value={password} 
-              onInput={onInputPassword}/>
-      </div>
-      <div className={styles.inputFiledArea}>
-        <input className={styles.inputFiledArea} 
-               placeholder="비밀번호 확인"
-              value={verificationPassword} 
-              onInput={onInputVerificationPassword}/>
-      </div>
-      <button className={styles.signInButton} onClick={onSignUpUser}>회원가입</button>
-      <button className={styles.signInButton} onClick={routingToLogin}>로그인하기</button>
+    
+    <div className="sign-up-wrapper">
+      <div className="sign-up-title">회원가입</div> 
+      <div className="sign-up-contents">
+        <TextFiled value={userId}
+                   placeholder="아이디 입력"
+                   onChange={onChangeUserId}></TextFiled>
+        <div className="duplication-button" onClick={checkDuplication}>{ userIdAvailable ? '확인 완료' : '중복 확인' }</div>
+        <TextFiled value={name}
+                   placeholder="이름 입력"
+                   onChange={onChangeName}></TextFiled>
+        <TextFiled value={password}
+                   type="password"
+                   placeholder="비밀번호"
+                   onChange={onChangePassword}></TextFiled>
+        <TextFiled value={verificationPassword}
+                   type="password"
+                   placeholder="비밀번호 확인"
+                   onChange={onChangeVerificationPassword}></TextFiled>
+      </div> 
+      <div className="sign-up-button-area">
+        <div className="sign-up-button" onClick={onSignUpUser}>회원가입</div>
+        <div className="sign-up-button" onClick={routingToLogin}>로그인하기</div>
+      </div> 
     </div>
   )
 }

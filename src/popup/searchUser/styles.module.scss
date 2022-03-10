@@ -11,10 +11,11 @@
     height: 50px;
     background-color: rgba(70, 66, 66, 0.666);
     color: #fff;
+    padding: 5px;
+    box-sizing: border-box;
 
     .button {
-      width: 50px;
-      margin: 0 10px;
+      height: 24px;
     }
   }
 

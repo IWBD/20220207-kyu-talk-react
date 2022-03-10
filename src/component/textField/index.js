@@ -20,6 +20,7 @@ function TextFiled( props ) {
     <div className={'text-field-wrapper ' + 
                     ( props.className || '' )}>
       <input className="text-field" 
+             {...props}
              maxLength={props.maxLength} 
              minLength={props.minLength}
              placeholder={props.placeholder}

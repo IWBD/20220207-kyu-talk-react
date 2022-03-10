@@ -15,6 +15,7 @@ function ChattingList() {
   }, [ store.userRelationList ] )
 
   const renderList = useMemo( () => {
+    console.log( store.chattingRoomList )
     const parsedChattingRoomList = _.map( store.chattingRoomList, chattingRoom => {
       let date, text, userStr, fromUserList
       const firstMessage = _( store.messageList )

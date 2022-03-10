@@ -1,10 +1,12 @@
+import './styles.scss'
 import _ from 'lodash'
-import styles from './styles.module.scss'
 import { useMemo } from 'react'
 import { useStoreState, useStoreDispatch } from '@store'
 import { usePopupManager } from '@context/popupManager'
 import ChattingRoom from '@popup/chattingRoom'
 import req2svr from './req2svr'
+
+import Icon from '@component/icon'
 
 function Profile( props ) {
   const store = useStoreState()
@@ -42,16 +44,24 @@ function Profile( props ) {
   }, [props.userId, store.userRelationList] )
   
   return (
-    <div className={styles.wrapper}>
-      <div className={styles.header}>
-        <button onClick={() => closePopup()}>닫기</button>
+    <div className="profile-wrapper">
+      <div className="header">
+        <div onClick={closePopup}>
+          <Icon>close</Icon>
+        </div> 
       </div>
-      <div className={styles.body}>
-        {props.name }
+      <div className="body">
+        {props.name}
       </div>
-      <div className={styles.footer}>
-        <button onClick={onOpenChatting}>1대1 채팅</button>
-        { !isFriend && <button onClick={onAddFriend}>친구 추가</button> }
+      <div className="footer">
+        <div className="footer-button" onClick={onOpenChatting}>
+          <Icon>textsms</Icon>
+          1대1 채팅
+        </div>
+        { !isFriend && <div className="footer-button" onClick={onAddFriend}>
+          <Icon>person_add</Icon>
+          친구 추가
+        </div> }
       </div>
     </div> 
   )

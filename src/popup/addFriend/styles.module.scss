@@ -11,6 +11,8 @@
     height: 50px;
     background-color: rgba(70, 66, 66, 0.666);
     color: #fff;
+    padding: 5px 0;
+    box-sizing: border-box;
 
     .button {
       height: 24px;
@@ -41,8 +43,4 @@
       }
     }
   }
-}
-
-.test {
-  color: red;
 }

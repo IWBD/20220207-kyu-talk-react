@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { usePopupManager } from '@context/popupManager'
 import { useStoreState } from '@store'
 import Profile from '@popup/profile'
+import TextField from '@component/textField'
 import Icon from '@component/icon'
  
 function AddFriend( props ) {
@@ -12,8 +13,8 @@ function AddFriend( props ) {
   const popupManager = usePopupManager()
   const store = useStoreState()
   
-  const onInputSearchWord = ( event ) => {
-    setSearchWord( event.target.value )
+  const onInputSearchWord = ( value ) => {
+    setSearchWord( value )
   }
 
   const onSearchUser = () => {
@@ -51,9 +52,11 @@ function AddFriend( props ) {
         <div className={styles.button} onClick={() => closePopup()}>
           <Icon>close</Icon>
         </div>
-        <input value={searchWord} onInput={( event ) => onInputSearchWord( event )}
-               onKeyPress={ event => onKeyPressEnter( event ) }></input>
-        <div className={styles.button} onClick={() => onSearchUser()}>
+        <TextField value={searchWord}
+                   placeholder="아이디 입력"
+                   onChange={onInputSearchWord}
+                   onKeyPress={ event => onKeyPressEnter( event )}></TextField>
+        <div className={styles.button} onClick={onSearchUser}>
           <Icon>search</Icon>
         </div>
       </div>

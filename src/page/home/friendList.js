@@ -22,7 +22,7 @@ function FriendList() {
   return (
     <>
       <div className={styles.user}>
-        {store.user.name}{store.user.userId}
+        {store.user.name}
       </div>
       <div className={styles.friend_area}>
         <div className={styles.friend_summery}>친구 {friendList.length}</div> 

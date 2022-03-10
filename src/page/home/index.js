@@ -11,6 +11,7 @@ import FriendList from './friendList'
 import AddFriend from '@popup/addFriend'
 import AddChattingRoom from '@popup/addChattingRoom'
 import SearchUser from '@popup/searchUser'
+import ChattingRoom from '@popup/chattingRoom'
 
 function Home() {
   const [ tabs, setTabs ] = useState( 'friend' )
@@ -30,9 +31,11 @@ function Home() {
   }
 
   const openMakeChatting = async () => {
-    const chattingRoom = await popupManager.open( AddChattingRoom )
-    storeDispatch( { type: 'updateChattingRoomList', values: [ chattingRoom ] } )
-    storeDispatch( { type: 'updateMessageListWithChattingRoom' } )
+    const chattingRoom = await popupManager.open( AddChattingRoom ).promise
+    if( chattingRoom ) {
+      await storeDispatch( { type: 'updateChattingRoomList', values: { chattingRoomList: [ chattingRoom ] } } )
+      popupManager.open( ChattingRoom, { roomId: chattingRoom.roomId } )
+    }
   }
 
   const headerTitle = useMemo( () => {

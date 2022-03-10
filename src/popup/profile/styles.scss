@@ -1,4 +1,4 @@
-.wrapper {
+.profile-wrapper {
   display: grid;
   grid-template-rows: minmax(0, 50px) minmax(0, 1fr) minmax(0, 100px);
   grid-template-columns: minmax(0, 1fr);
@@ -7,7 +7,8 @@
   
   .header {
     display: flex;
-    align-items: center ;  
+    align-items: center;
+    padding: 0 10px;  
   }
 
   .body {
@@ -15,14 +16,21 @@
     flex-direction: column;
     justify-content: center;
     align-items: center;    
+    font-size: 30px;
   }
 
   .footer {
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: space-around;
     background-color: rgb(39, 39, 39);
+
+    .footer-button {
+      flex: 0 0 100px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+    }
   }
-  
-  
 }

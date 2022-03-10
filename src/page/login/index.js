@@ -1,9 +1,10 @@
-import styles from './styles.module.scss'
+import './styles.scss'
 import React, { useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useStoreDispatch } from '@store'
 import { useSocket } from '@context/socket'
 import req2svr from './req2svr'
+import TextFiled from '@component/textField'
 
 function SignInUser() {
   const [ userId, setUserId ] = useState( '' )
@@ -12,12 +13,12 @@ function SignInUser() {
   const socket = useSocket()
   const navigate = useNavigate()
 
-  const onInputUserId = useCallback( ( event ) => {
-    setUserId( event.target.value )
+  const onInputUserId = useCallback( ( value ) => {
+    setUserId( value )
   }, [] )
 
-  const onInputPasswrod = useCallback( ( event ) => {
-    setPassword( event.target.value )
+  const onInputPasswrod = useCallback( ( value ) => {
+    setPassword( value )
   }, [] )
 
   const onLogin = async () => {
@@ -28,7 +29,6 @@ function SignInUser() {
       }
       window.localStorage.setItem( 'login-info', JSON.stringify( { authToken: 'agaghajgsadgdsh', userId: userId } ) )
       storeDispatch( { type: 'initStore', values: res.payload } )
-      storeDispatch( { type: 'updateMessageListWithChattingRoom' } )
       socket.login( res.payload.user.userId )
       navigate( '/' )
     } catch ( err ) {
@@ -42,12 +42,21 @@ function SignInUser() {
   }
   
   return (
-    <div className={styles.signInUserWrapper}>
-      <div className={styles.title}>sign</div> 
-      <input className={styles.inputFiledArea} value={userId} onInput={onInputUserId}/>
-      <input className={styles.inputFiledArea} value={password} onInput={onInputPasswrod}/>
-      <button className={styles.signInButton} onClick={onLogin}>로그인</button>
-      <button className={styles.signInButton} onClick={routingToSign}>회원가입</button>
+    <div className="sign-in-user-wrapper">
+      <div className="sign-in-title">talk</div> 
+      <div className="sign-in-content">
+        <TextFiled value={userId} 
+                  onChange={onInputUserId}
+                  placeholder="아이디"></TextFiled>
+        <TextFiled value={password} 
+                   type="password"
+                   onChange={onInputPasswrod}
+                   placeholder="비밀번호"></TextFiled>
+      </div>
+      <div className="sign-in-button-area">
+        <div className="sign-in-button" onClick={onLogin}>로그인</div>
+        <div className="sign-in-button" onClick={routingToSign}>회원가입</div>
+      </div>
     </div>
   )
 }
