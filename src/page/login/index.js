@@ -27,7 +27,13 @@ function SignInUser() {
       if( res.code !== 200 ) {
         throw new Error( res )
       }
-      window.localStorage.setItem( 'login-info', JSON.stringify( { authToken: 'agaghajgsadgdsh', userId: userId } ) )
+      
+      res = await req2svr.getUserInfo( userId )
+      if( res.code !== 200 ) {
+        throw new Error( res )
+      }
+
+      window.localStorage.setItem( 'login-info', JSON.stringify( { userId } ) )
       storeDispatch( { type: 'initStore', values: res.payload } )
       socket.login( res.payload.user.userId )
       navigate( '/' )

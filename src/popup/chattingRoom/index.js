@@ -24,31 +24,27 @@ function ChattingRoom( props ) {
   }
 
   const sendMessage = () => {
-    const sendMessge = {
+    const senMessage = {
       roomId: props.roomId || null,
       sendUserId: store.user.userId,
       text: message,
       createDate: new Date().getTime(),
-      notReadCount: fromUserList.length,
     }
-     
+
     req2svr.sendMessage( { 
-      message: sendMessge, 
-      fromUserIdList: fromUserList || null
+      message: senMessage, 
+      fromUserIdList: _.map( fromUserList, 'userId' ) 
     } ).then( res => {
       if( res.code !== 200 ) {
         console.error( 'message fail' )
         return 
       }
       
-      const { chattingRoom, message, userRelationList } = res.payload 
+      const { chattingRoom: curChattingRoom, message } = res.payload 
 
-      if( userRelationList && !_.isEmpty( userRelationList ) ) {
-        storeDispatch( { type: 'updateUserRelationList', values: { userRelationList: userRelationList } } )
-      }
-
-      if( chattingRoom && !_.isEmpty( chattingRoom ) ) {
-        storeDispatch( { type: 'updateChattingRoomList', values: { chattingRoomList: [ chattingRoom ] } } )
+      if( chattingRoom &&
+        !_.isEmpty( _.differenceBy( chattingRoom.fromUserList, curChattingRoom.fromUserList, 'name' ) ) ) {
+          storeDispatch( { type: 'updateChattingRoomList', values: { chattingRoomList: [ curChattingRoom ] } } )
       }
 
       storeDispatch( { type: 'updateMessageList', values: { messageList: [ message ] } } )
@@ -61,34 +57,33 @@ function ChattingRoom( props ) {
     } )
   }
 
-  const userRelationMap = useMemo( () => {
-    return _.keyBy( store.userRelationList, 'userId' )  
-  }, [ store.userRelationList ] )
-
   const moveScrollToBottom = () => {
     const { scrollHeight, clientHeight } = scrollRef.current
     scrollRef.current.scrollTop = scrollHeight - clientHeight
   }
+
+  const userRelationMap = useMemo( () => {
+    return _.keyBy( store.userRelationList, 'userId' )  
+  }, [ store.userRelationList ] )
 
   const chattingRoom = useMemo( () => {
     return props.roomId ? _.find( store.chattingRoomList, { roomId: props.roomId } ) : null
   }, [ props.roomId, store.chattingRoomList ] )
 
   const fromUserList = useMemo( () => {
-    let fromUserList
-    if( chattingRoom ) {
-      try {
-        fromUserList = JSON.parse( chattingRoom.roomUser )
-      } catch( err ) {
-        console.error( err )
-        return null
-      }
-    } else {
-      fromUserList = props.fromUserList
-    }
-
-    return fromUserList
-  }, [chattingRoom, props.fromUserList] )
+    const fromUserList = chattingRoom ? chattingRoom.roomUser : props.fromUserList
+    return _( fromUserList )
+      .filter( ( { userId } ) => {
+        return store.user.userId !== userId 
+      } )
+      .map( fromUser => {
+        return {
+          ...fromUser,
+          name: _.get( userRelationMap, `${fromUser.userId}.name` ) || fromUser.name 
+        }
+      } )
+      .value()
+  }, [ userRelationMap, store.user.userId, chattingRoom, props.fromUserList ] )
 
   const messageList = useMemo( () => {
     return _( store.messageList )
@@ -96,12 +91,16 @@ function ChattingRoom( props ) {
         if( props.roomId ) {
           return message.roomId === props.roomId
         } 
+        
+        if( !props.roomId && message.roomId ) {
+          return false
+        }
 
         if( message.sendUserId === store.user.userId ) {
-          return message.fromUserId === fromUserList[0]
+          return _.get( message, 'fromUserList.0.userId' ) === _.get( fromUserList, '0.userId' )
         }
         
-        return message.fromUserId === store.user.userId
+        return _.get( message, 'fromUserList.0.userId' ) === store.user.userId
       } )
       .map( message => {
         let sendUserName
@@ -113,15 +112,15 @@ function ChattingRoom( props ) {
         return { ...message, sendUserName }
       } )
       .orderBy( 'createDate' ).value()
-  }, [store.messageList, store.user.name, props.roomId, store.user.userId, fromUserList, userRelationMap] )
+  }, [ store.messageList, store.user.name, props.roomId, store.user.userId, fromUserList, userRelationMap ] )
 
   const title = useMemo( () => {
-    if( chattingRoom ) {
+    if( fromUserList.length > 1 ) {
       return `그룹 채팅(${fromUserList.length})`
     } else {
-      return _.get( userRelationMap, `${fromUserList[0]}.name` ) || '알수없음'
+      return _.get( fromUserList, `0.name` ) || '알수없음'
     }
-  }, [chattingRoom, fromUserList, userRelationMap] )
+  }, [ fromUserList ] )
   
   useEffect( () => {
     const { scrollHeight, clientHeight, scrollTop } = scrollRef.current
@@ -148,11 +147,11 @@ function ChattingRoom( props ) {
           { messageList && messageList.map( message => {
             return message.sendUserId === store.user.userId ?
               <div className={`${styles.message_field} ${styles.my_message}`} key={message.messageId}>
-                <div className={styles.text}>{message.text}</div>
+                <div className={styles.text}>{message.messageId}</div>
               </div> : 
               <div className={styles.message_field} key={message.messageId}>
                 <div className={styles.name}>{message.sendUserName}</div>
-                <div className={styles.text}>{message.text}</div>
+                <div className={styles.text}>{message.messageId}</div>
               </div> 
           } ) }
         </div>

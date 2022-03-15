@@ -6,10 +6,8 @@ import { BrowserRouter } from 'react-router-dom'
 import { StoreProvider } from './store'
 import { SocketProvider } from '@context/socket'
 
-const pathname = window.location.pathname
-if( pathname === '/' ) {
-  let loginInfo = window.localStorage.getItem( 'login-info' )  
-  if( !loginInfo ) {
+if( window.location.pathname === '/' ) {
+  if( !window.localStorage.getItem( 'login-info' ) ) {
     window.location = '/login'
   }
 } 
