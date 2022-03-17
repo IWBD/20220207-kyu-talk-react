@@ -47,14 +47,14 @@ function Home() {
       <div className={styles.header}>
         <div className={styles.title}>{headerTitle}</div>
         <div className={styles.contents}>
-          <div className={styles.button} onClick={() => openSearchUser()}>
+          <div className={styles.button} onClick={openSearchUser}>
             <Icon>search</Icon>
           </div>
           { tabs === 'friend' ? 
-            <div className={styles.button} onClick={() => openAddFriend()}>
+            <div className={styles.button} onClick={openAddFriend}>
               <Icon>person_add</Icon>
             </div> :
-            <div className={styles.button} onClick={() => openMakeChatting()}>
+            <div className={styles.button} onClick={openMakeChatting}>
               <Icon>maps_ugc</Icon>
             </div> }
         </div>
