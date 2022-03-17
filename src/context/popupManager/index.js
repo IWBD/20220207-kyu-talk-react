@@ -1,28 +1,26 @@
-import { createContext, useContext, useRef, useState } from 'react'
-import PopupAnchor from './popupAnchor'
+import { useState } from 'react'
+import './popup.scoped.scss'
 
-const PopupManagerContext = createContext()
+let nextKey = 0
+let popupList
+let popupListDispatch
 
-function PopupManagerProvider( props ) {
-  const [ popupList, setPopupList ] = useState( [] )
-  const nextKey = useRef( 0 )
-  
-  const open = ( component, params, options ) => {
+const popupManager = {
+  open: function( component, params, options ) {
     if( !component ) {
       throw new Error( 'component is null' )
     }
     
-    const popupKey = `_popup_key_${nextKey.current++}`
+    const popupKey = `_popup_key_${nextKey++}`
     
     let resolve
     let promise = new Promise( ( rs, rj ) => { resolve = rs } )
     
-    setPopupList( [ ...popupList, { component, popupKey, params, options, resolve } ] )
+    popupListDispatch( [ ...popupList, { component, popupKey, params, options, resolve } ] )
     
     return { popupKey, promise }
-  }
-  
-  const close = ( inst, params ) => {
+  },
+  close: function( inst, params ) {
     if( !inst || !popupList.length ) {
       return 
     }
@@ -39,26 +37,36 @@ function PopupManagerProvider( props ) {
       
       resolve( params )
       
-      setPopupList( editPopupList )
+      popupListDispatch( editPopupList )
     }
+  } 
+}
 
-    return
-  }
+function PopupAnchor() {
+  const [ list, setList ] = useState( [] )
+  popupList = list
+  popupListDispatch = setList
   
   return (
-    <PopupManagerContext.Provider value={{open, close}}>
-      {props.children}
-      <PopupAnchor popupList={popupList}></PopupAnchor>
-    </PopupManagerContext.Provider>
+    <div className="popup-anchor">
+      { popupList.map( ( popup, index ) => {
+          const params = popup.params || {}
+          params.popupKey = popup.popupKey
+          return <div className="popup-wrapper" key={`${popup.popupKey}_anchor_${index}`}>
+            <div className="popup-container">
+              <popup.component {...params}></popup.component>
+            </div>
+          </div>
+      } ) }
+    </div> 
   )
 }
 
 function usePopupManager() {
-  const context = useContext( PopupManagerContext )
-  return context
+  return popupManager
 }
 
 export {
-  PopupManagerProvider,
+  PopupAnchor,
   usePopupManager
 }

@@ -2,7 +2,7 @@ import './app.css'
 import _ from 'lodash'
 import { useEffect } from 'react'
 import { Routes, Route } from 'react-router-dom'
-import { PopupManagerProvider } from '@context/popupManager'
+import { PopupAnchor } from '@context/popupManager'
 import { useSocket } from '@context/socket'
 import { useStoreState, useStoreDispatch } from '@store'
 import req2svr from './req2svr'
@@ -44,14 +44,15 @@ function App() {
 
   return (
     <div className="App">
-      <PopupManagerProvider>
+      {/* <PopupManagerProvider> */}
         <Routes>
           <Route path="/" element={<Home/>}></Route>
           <Route path="/login" element={<Login/>}></Route>
           <Route path="/signUp" element={<SignUp/>}></Route>
           <Route path="/*" element={<div>404</div>}></Route>
         </Routes>
-      </PopupManagerProvider>
+        <PopupAnchor></PopupAnchor>
+      {/* </PopupManagerProvider> */}
     </div>
   )
 }
