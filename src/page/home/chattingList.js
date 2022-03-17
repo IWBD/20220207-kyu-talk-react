@@ -88,7 +88,7 @@ function ChattingList() {
 
     return _( parsedChattingRoomList )
       .concat( persedMessageList )
-      .orderBy( 'createDate', 'desc' )
+      .orderBy( 'date', 'desc' )
       .value()
       
   }, [ store.chattingRoomList, store.messageList, userRelationMap, store.user.userId ] )

@@ -44,6 +44,27 @@ function reducer( state, action ) {
         .filter( ( { messageId } ) => !_.find( updateMessageList, { messageId } ) )
         .concat( updateMessageList ).value()
       return { ...state }
+    case 'readMessageList': 
+      const { userId, messageIdList } = action.values
+
+      const readMessageList = _( state.messageList )
+        .filter( ( { messageId } ) => _.includes( messageIdList, messageId ) )
+        .map( message => {
+          const fromUserList = _.map( message.fromUserList, fromUser => {
+            const isRead = userId === fromUser.userId ? true : fromUser.isRead  
+            return { ...fromUser, isRead }
+          } )
+    
+          return { ...message, fromUserList }
+        } )
+        .value() 
+      
+      console.log( readMessageList )
+      
+      state.messageList = _( state.messageList )
+        .filter( ( { messageId } ) => !_.find( readMessageList, { messageId } ) )
+        .concat( readMessageList ).value()
+      return { ...state }
     default : 
       throw new Error( 'wrong action type' )
   }

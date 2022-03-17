@@ -1,11 +1,13 @@
-import styles from './styles.module.scss'
+import './styles.scss'
 import _ from 'lodash'
+import moment from 'moment'
+import req2svr from './req2svr'
 
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import { usePopupManager } from '@context/popupManager'
 import { useMemo } from 'react'
 import { useStoreState, useStoreDispatch } from '@store'
-import req2svr from './req2svr'
+
 import Icon from '@component/icon'
 
 function ChattingRoom( props ) { 
@@ -107,12 +109,48 @@ function ChattingRoom( props ) {
         if( message.sendUserId === store.user.userId ) {
           sendUserName = store.user.name
         } else {
-          sendUserName = _.get( userRelationMap, `${message.sendUserId}.name` )
+          sendUserName = _.get( userRelationMap, `${message.sendUserId}.name` ) || message.sendUserName
         }
-        return { ...message, sendUserName }
+
+        const notReadCount = _.sumBy( message.fromUserList, ( { isRead } ) => isRead ? 0 : 1 )
+
+        return { ...message, sendUserName, notReadCount }
       } )
       .orderBy( 'createDate' ).value()
   }, [ store.messageList, store.user.name, props.roomId, store.user.userId, fromUserList, userRelationMap ] )
+
+  const renderList = useMemo( () => {
+    return _.reduce( messageList, ( accumalator, message, idx ) => {
+      if( !idx ) {
+        accumalator.push( {
+          sendUserId: message.sendUserId, 
+          messageList: [ message ],
+          sendUserName: message.sendUserName,
+          formatDate: moment( message.createDate, 'x' ).format('LT')
+        } )
+        return accumalator
+      } 
+      
+      const diffDate = moment( message.createDate, 'x' )
+        .diff( moment( messageList[ idx - 1 ].createDate, 'x' ), 'minutes' )
+      
+      if( diffDate || messageList[ idx - 1 ].sendUserId !== message.sendUserId ) {
+        accumalator.push( {
+          sendUserId: message.sendUserId, 
+          messageList: [ message ],
+          sendUserName: message.sendUserName,
+          formatDate: moment( message.createDate, 'x' ).format('LT')
+        } )
+        
+        return accumalator
+      } 
+
+      accumalator[ accumalator.length - 1 ].formatDate = moment( message.createDate, 'x' ).format('LT')
+      accumalator[ accumalator.length - 1 ].messageList.push( message )
+
+      return accumalator
+    }, [] )
+  }, [ messageList ] )
 
   const title = useMemo( () => {
     if( fromUserList.length > 1 ) {
@@ -121,45 +159,81 @@ function ChattingRoom( props ) {
       return _.get( fromUserList, `0.name` ) || '알수없음'
     }
   }, [ fromUserList ] )
+
+  const readMessage = useCallback( async () => {
+    const notReadMessageIdList = _.filter( messageList, ( { sendUserId, fromUserList } ) => {
+      if( sendUserId === store.user.userId ) {
+        return false
+      }
+      const fromUser = _.find( fromUserList, { userId: store.user.userId } )
+      return !fromUser.isRead
+    } )
+
+    if( _.isEmpty( notReadMessageIdList ) ) {
+      return
+    }
+
+    const params = {
+      messageList: notReadMessageIdList,
+      userId: store.user.userId
+    }
+
+    try {
+      let res = await req2svr.readMessage( params )
+      if( res.code !== 200 ) {
+        throw new Error( res )    
+      }
+    } catch( err ) {
+      console.error( err )
+    }
+  }, [ store.user.userId, messageList ] )
   
   useEffect( () => {
+    readMessage()
     const { scrollHeight, clientHeight, scrollTop } = scrollRef.current
     if( scrollHeight - clientHeight - scrollTop < 150 ) {
       moveScrollToBottom()
     }
-  }, [messageList] )
+    // console.log( renderList )
+  }, [ messageList, readMessage ] )
 
   useEffect( () => {
     moveScrollToBottom()
   }, [] )
  
   return (
-    <div className={styles.wrapper}>
-      <div className={styles.header}>
-        <div className={styles.button} onClick={() => closePopup()}>
+    <div className="chatting-room-wrapper">
+      <div className="header">
+        <div className="button" onClick={closePopup}>
           <Icon>close</Icon>
         </div>
         { title }
-        <div className={styles.button}></div>
+        <div className="button"></div>
       </div>
-      <div className={styles.contents}>
-        <div className={styles.chatting} ref={scrollRef}>
-          { messageList && messageList.map( message => {
-            return message.sendUserId === store.user.userId ?
-              <div className={`${styles.message_field} ${styles.my_message}`} key={message.messageId}>
-                <div className={styles.text}>{message.messageId}</div>
-              </div> : 
-              <div className={styles.message_field} key={message.messageId}>
-                <div className={styles.name}>{message.sendUserName}</div>
-                <div className={styles.text}>{message.messageId}</div>
-              </div> 
-          } ) }
+      <div className="contents">
+        <div className="chatting" ref={scrollRef}>
+          { renderList && renderList.map( ( item, idx ) => {
+            return <div className={`message-field ${item.sendUserId === store.user.userId ? 'my-message' : '' }`} key={idx}>
+              { item.sendUserId !== store.user.userId && <div className="send-user-name">{item.sendUserName}</div> }
+              { item.messageList.map( ( message, msgIdx ) => {
+                return <div className="message-box" key={msgIdx}>
+                  <div className="sub-info">
+                    <div className="read-count">
+                      { message.notReadCount || '' }
+                    </div>
+                    { item.messageList.length - 1 === msgIdx && <div className="send-date">{item.formatDate}</div> }
+                  </div>
+                  <div className="text">{message.text}</div>
+                </div>
+              } ) }
+            </div>
+          } ) } 
         </div>
-        <div className={styles.textarea_field}>
-          <textarea className={styles.textarea}
+        <div className="textarea-field">
+          <textarea className="textarea"
                     value={message}
                     onInput={onInputMessage}></textarea>
-          <div className={styles.send_button}
+          <div className="send-button"
                   onClick={sendMessage}>보내기</div>
         </div>
       </div>

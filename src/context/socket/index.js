@@ -1,6 +1,6 @@
 import { createContext, useContext } from 'react'
 import socketIoClient from 'socket.io-client'
-import { useStoreDispatch, useStoreState } from '@store'
+import { useStoreDispatch } from '@store'
 import _ from 'lodash'
 
 const SocketContext = createContext()
@@ -18,6 +18,16 @@ socket.on( 'message', function( messageParams ) {
   if( message && !_.isEmpty( message ) ) {
     storeDispatch( { type: 'updateMessageList', values: { messageList: [ message ] } } )
   }
+} )
+
+socket.on( 'readMessage', function( readMessageParams ) {
+  const { userId, messageIdList } = readMessageParams
+
+  if( !userId || _.isEmpty( messageIdList || [] ) ) {
+    return
+  }
+  
+  storeDispatch( { type: 'readMessageList', values: { userId, messageIdList } } )
 } )
 
 function login( userId ) {
